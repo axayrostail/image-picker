@@ -1,5 +1,5 @@
 // App.js
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -13,12 +13,24 @@ import ImagePicker, {
   launchCamera,
   launchImageLibrary,
 } from "react-native-image-picker";
+import {connect} from 'react-redux';
 
-export default function ImagePickerComponent(props) {
+import {LoadDefaultImages} from './../resources-store/action';
+
+function ImagePickerComponent(props) {
   const [resourcePath, setResourcePath] = useState({});
 
+  useEffect(() => {
+   props.LoadDefaultImages();
+  }, [])
+
+  useEffect(() => {
+    console.log('>>>>>>> ', props.images);
+
+  }, [props.images])
+
   // Launch Camera
-  cameraLaunch = () => {
+  const cameraLaunch = () => {
     let options = {
       storageOptions: {
         skipBackup: true,
@@ -46,7 +58,7 @@ export default function ImagePickerComponent(props) {
     });
   };
 
-  imageGalleryLaunch = () => {
+  const imageGalleryLaunch = () => {
     let options = {
       storageOptions: {
         skipBackup: true,
@@ -74,7 +86,7 @@ export default function ImagePickerComponent(props) {
       }
     });
   };
-  
+
   return (
     <View style={styles.container}>
       <View style={styles.container}>
@@ -89,11 +101,11 @@ export default function ImagePickerComponent(props) {
           style={{ width: 200, height: 200 }}
         />
         <Text style={{ alignItems: "center" }}>{resourcePath.uri}</Text>
-        <TouchableOpacity onPress={this.cameraLaunch} style={styles.button}>
+        <TouchableOpacity onPress={() => cameraLaunch()} style={styles.button}>
           <Text style={styles.buttonText}>Launch Camera Directly</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={this.imageGalleryLaunch}
+          onPress={() => launchImageLibrary()}
           style={styles.button}
         >
           <Text style={styles.buttonText}>Launch Image Gallery Directly</Text>
@@ -126,3 +138,13 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
 });
+
+const mapStateToProps = (state) => ({
+  images: {...state.ImagePickerReducer.images},
+})
+
+const mapDispatchToProps = (dispatch) => ({
+  LoadDefaultImages: ()  => dispatch(LoadDefaultImages()),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(ImagePickerComponent);

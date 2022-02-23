@@ -9,18 +9,19 @@
 import React from 'react';
 import type {Node} from 'react';
 import {
-  SafeAreaView,
-  StyleSheet,
-  Text,
   useColorScheme,
   View,
 } from 'react-native';
+import { PersistGate } from 'redux-persist/integration/react';
+import { Provider } from 'react-redux';
 
 import {
   Colors,
 } from 'react-native/Libraries/NewAppScreen';
 
+import { store, persistor }  from './app/src/redux-store/store';
 import ImagePickerComponent from './app/src/components/index';
+
 
 const App: () => Node = () => {
   const isDarkMode = useColorScheme() === 'dark';
@@ -30,27 +31,15 @@ const App: () => Node = () => {
   };
 
   return (
-    <ImagePickerComponent></ImagePickerComponent>
+    <View style={{flex:1}}>
+    <Provider store={store}>
+       <PersistGate persistor={persistor}>
+           <ImagePickerComponent></ImagePickerComponent>
+       </PersistGate>
+     </Provider>
+   </View>
   );
 };
 
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
 
 export default App;
