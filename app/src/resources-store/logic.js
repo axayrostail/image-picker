@@ -1,6 +1,8 @@
 import { createLogic } from 'redux-logic';
 import { LOAD_DEFAULT_IMAGES, LoadDefaultImagesSuccess, LOAD_DEFAULT_IMAGES_FAILED, LoadDefaultImagesFailed  } from './action';
 
+const customData = require('./../../assets/data.json');
+
 export const createImagePickerLogic = createLogic({
   type: LOAD_DEFAULT_IMAGES,
   latest: true,
@@ -18,10 +20,10 @@ export const createImagePickerLogic = createLogic({
       .then((response) => response.json())
       .then(async (responseJson) => {
           if (responseJson) {
-            dispatch(LoadDefaultImagesSuccess(responseJson.message));
+            dispatch(LoadDefaultImagesSuccess(customData));
             done();
           } else {
-            dispatch(LoadDefaultImagesFailed(responseJson));
+            dispatch(LoadDefaultImagesFailed(null));
             done();
           }
           done();

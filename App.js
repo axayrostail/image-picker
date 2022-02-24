@@ -20,7 +20,7 @@ import {
 } from 'react-native/Libraries/NewAppScreen';
 
 import { store, persistor }  from './app/src/redux-store/store';
-import ImagePickerComponent from './app/src/components/index';
+import RootNavigation from './app/src/navigations/rootNavigation';
 
 
 const App: () => Node = () => {
@@ -34,7 +34,7 @@ const App: () => Node = () => {
     <View style={{flex:1}}>
     <Provider store={store}>
        <PersistGate persistor={persistor}>
-           <ImagePickerComponent></ImagePickerComponent>
+           <RootNavigation></RootNavigation>
        </PersistGate>
      </Provider>
    </View>

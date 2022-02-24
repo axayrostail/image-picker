@@ -1,4 +1,3 @@
-// App.js
 import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
@@ -13,19 +12,23 @@ import ImagePicker, {
   launchCamera,
   launchImageLibrary,
 } from "react-native-image-picker";
+import { ScrollView } from "react-navigation";
 import {connect} from 'react-redux';
 
-import {LoadDefaultImages} from './../resources-store/action';
+import {LoadDefaultImages, SaveNewImage} from './../resources-store/action';
 
 function ImagePickerComponent(props) {
   const [resourcePath, setResourcePath] = useState({});
+  const [captureImages, setCaptureImages] = useState([]);
+
 
   useEffect(() => {
    props.LoadDefaultImages();
   }, [])
 
   useEffect(() => {
-    console.log('>>>>>>> ', props.images);
+    console.log('setCaptureImages ', props.images)
+    setCaptureImages(props.images);
 
   }, [props.images])
 
@@ -36,6 +39,7 @@ function ImagePickerComponent(props) {
         skipBackup: true,
         path: "images",
       },
+      includeBase64: true
     };
     launchCamera(options, (res) => {
       console.log("Response = ", res);
@@ -49,11 +53,14 @@ function ImagePickerComponent(props) {
       } else {
         const source = { uri: res.uri };
         console.log("response", JSON.stringify(res));
-        this.setState({
-          filePath: res,
-          fileData: res.data,
-          fileUri: res.uri,
+        setCaptureImages({
+          filePath: res.assets[0],
+          fileData: res.assets[0].data,
+          fileUri: res.assets[0].uri,
+          data: res.assets[0].base64
         });
+        props.SaveNewImage({category: 'Landscape', data: res.assets[0].base64})
+        props.navigation.navigate('CategoryComponent');
       }
     });
   };
@@ -64,6 +71,7 @@ function ImagePickerComponent(props) {
         skipBackup: true,
         path: "images",
       },
+      includeBase64: true
     };
 
     launchImageLibrary(options, (res) => {
@@ -78,55 +86,61 @@ function ImagePickerComponent(props) {
       } else {
         const source = { uri: res.uri };
         console.log("response", JSON.stringify(res));
-        this.setState({
-          filePath: res,
-          fileData: res.data,
-          fileUri: res.uri,
+        setCaptureImages({
+          filePath: res.assets[0],
+          fileData: res.assets[0].data,
+          fileUri: res.assets[0].uri,
+          data: res.assets[0].base64
         });
+        props.SaveNewImage({category: 'Landscape', data: res.assets[0].base64})
+        props.navigation.navigate('CategoryComponent');
       }
     });
   };
 
+ console.log('componetn >>>> ', captureImages)
   return (
-    <View style={styles.container}>
       <View style={styles.container}>
-        <Image
-          source={{
-            uri: "data:image/jpeg;base64," + resourcePath.data,
-          }}
-          style={{ width: 100, height: 100 }}
-        />
-        <Image
-          source={{ uri: resourcePath.uri }}
-          style={{ width: 200, height: 200 }}
-        />
-        <Text style={{ alignItems: "center" }}>{resourcePath.uri}</Text>
+        <ScrollView>
+        <View style={{flex: 1, justifyContent: 'space-between', flexWrap: 'wrap', flexDirection: 'row'}}>
+        {captureImages&& captureImages.length ? captureImages?.map((img, i) => 
+          <View style={{padding: 10}} key={i}>
+            <Image
+              source={{
+                uri: "data:image/jpeg;base64," + img?.data,
+              }}
+              style={{ width: 150, height: 120 }}
+            />
+            <Text style={{alignSelf: 'center'}}>{img?.category}</Text>
+          </View>) : null}
+        </View>
+        </ScrollView>
+        <View style={{alignSelf: 'center'}}>
         <TouchableOpacity onPress={() => cameraLaunch()} style={styles.button}>
           <Text style={styles.buttonText}>Launch Camera Directly</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => launchImageLibrary()}
+          onPress={() => imageGalleryLaunch()}
           style={styles.button}
         >
           <Text style={styles.buttonText}>Launch Image Gallery Directly</Text>
         </TouchableOpacity>
+        </View>
       </View>
-    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 30,
-    alignItems: "center",
-    justifyContent: "center",
+    padding: 10,
     backgroundColor: "#fff",
   },
   button: {
     width: 250,
     height: 60,
-    backgroundColor: "#3740ff",
+    borderRadius: 20,
+    backgroundColor: "#008CBA",
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 4,
@@ -139,12 +153,17 @@ const styles = StyleSheet.create({
   },
 });
 
+ImagePickerComponent['navigationOptions'] = screenProps => ({
+  header: null,
+})
+
 const mapStateToProps = (state) => ({
-  images: {...state.ImagePickerReducer.images},
+  images: state.ImagePickerReducer.images,
 })
 
 const mapDispatchToProps = (dispatch) => ({
   LoadDefaultImages: ()  => dispatch(LoadDefaultImages()),
+  SaveNewImage: (data) => dispatch(SaveNewImage(data))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(ImagePickerComponent);
